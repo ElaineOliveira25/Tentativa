@@ -1,0 +1,33 @@
+{
+  "validUser": {
+    "username": "alice@example.com",
+    "password": "Test@1234",
+    "description": "Existing demo account — update to match your app's seeded user"
+  },
+  "invalidUser": {
+    "username": "wrong@example.com",
+    "password": "wrongpassword123",
+    "description": "Credentials that must NOT exist in the app"
+  },
+  "emptyUser": {
+    "username": "",
+    "password": "",
+    "description": "Used for required-field validation tests"
+  },
+  "newUser": {
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe.test@example.com",
+    "password": "NewUser@456",
+    "confirmPassword": "NewUser@456",
+    "description": "New user for sign-up tests. The e2e spec appends a timestamp to make the email unique per run."
+  },
+  "mismatchUser": {
+    "firstName": "Jane",
+    "lastName": "Smith",
+    "email": "jane.smith@example.com",
+    "password": "Password@1",
+    "confirmPassword": "Password@2",
+    "description": "Used to test password mismatch validation on sign-up"
+  }
+}

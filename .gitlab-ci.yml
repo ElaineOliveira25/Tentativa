@@ -1,0 +1,98 @@
+image: node:18-bullseye
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GitLab CI/CD — Desafio Banco Carrefour Mobile Automation
+# ─────────────────────────────────────────────────────────────────────────────
+# Required CI/CD variables (Settings → CI/CD → Variables):
+#   ANDROID_APP_PATH            Path to the .apk inside the runner (or use artifact)
+#   BROWSERSTACK_USERNAME       BrowserStack user (optional — manual job)
+#   BROWSERSTACK_ACCESS_KEY     BrowserStack key  (optional — manual job)
+#   BROWSERSTACK_ANDROID_APP    bs://APP_ID        (optional — manual job)
+#   BROWSERSTACK_IOS_APP        bs://APP_ID        (optional — manual job)
+#   BUILD_NAME                  Human-readable build label (optional)
+# ─────────────────────────────────────────────────────────────────────────────
+
+stages:
+  - install
+  - test
+  - report
+
+variables:
+  ANDROID_DEVICE:  "emulator-5554"
+  ANDROID_VERSION: "13.0"
+  BUILD_NAME:      "$CI_PIPELINE_ID"
+
+# ── Cache node_modules across jobs ───────────────────────────────────────────
+cache:
+  key: "$CI_COMMIT_REF_SLUG-node-modules"
+  paths:
+    - node_modules/
+
+# ── 1. Install dependencies ───────────────────────────────────────────────────
+install:
+  stage: install
+  script:
+    - npm ci --prefer-offline
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 1 hour
+
+# ── 2a. Android tests (local Appium + emulator) ───────────────────────────────
+test:android:
+  stage: test
+  needs: [install]
+  script:
+    - echo "Starting Android test run..."
+    - npm run test:android
+  artifacts:
+    when: always
+    paths:
+      - allure-results/
+      - errorShots/
+      - appium-android.log
+    expire_in: 7 days
+  allow_failure: false
+  only:
+    - merge_requests
+    - main
+    - develop
+
+# ── 2b. BrowserStack Android (triggered manually or from main) ────────────────
+test:browserstack:android:
+  stage: test
+  needs: [install]
+  script:
+    - echo "Running tests on BrowserStack Android..."
+    - npm run test:browserstack
+  variables:
+    BROWSERSTACK_USERNAME:    "$BROWSERSTACK_USERNAME"
+    BROWSERSTACK_ACCESS_KEY:  "$BROWSERSTACK_ACCESS_KEY"
+    BROWSERSTACK_ANDROID_APP: "$BROWSERSTACK_ANDROID_APP"
+  artifacts:
+    when: always
+    paths:
+      - allure-results/
+    expire_in: 7 days
+  when: manual
+  only:
+    - main
+    - tags
+
+# ── 3. Generate Allure report ─────────────────────────────────────────────────
+allure:report:
+  stage: report
+  needs: [test:android]
+  script:
+    - npm install -g allure-commandline --quiet
+    - npm run allure:generate
+  artifacts:
+    name: "allure-report-$CI_PIPELINE_ID"
+    paths:
+      - allure-report/
+    expire_in: 30 days
+  when: always
+  only:
+    - merge_requests
+    - main
+    - develop
