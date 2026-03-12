@@ -1,6 +1,6 @@
 'use strict';
 
-const { config: baseConfig } = require('./wdio.conf');
+const { config: baseConfig } = require('./wdio.conf.JS');
 const iosCaps = require('./config/caps.ios');
 
 exports.config = {

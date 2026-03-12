@@ -4,92 +4,118 @@ const BasePage = require('./BasePage');
 
 /**
  * SignUpPage — selectors and actions for the Sign Up / Registration screen.
+ * Seletores extraídos de 02_signup.spec.js e 03_navigation.spec.js.
  */
 class SignUpPage extends BasePage {
-    // ─── Selectors ────────────────────────────────────────────────────────────
+    // ─── Navegação ────────────────────────────────────────────────────────────
 
-    get firstNameInput()       { return $('~test-firstname'); }
-    get lastNameInput()        { return $('~test-lastname'); }
-    get emailInput()           { return $('android=new UiSelector().text("Email")'); }
-    get passwordInput()        { return $('android=new UiSelector().text("Password")'); }
-    get confirmPasswordInput() { return $('android=new UiSelector().text("Confirm password")'); }
-    get registerButton()       { return $('~test-register-btn'); }
-    get errorMessage()         { return $('~test-error-message'); }
-    get backToLoginLink()      { return $('~test-back-to-login'); }
-    get formTitle()            { return $('android=new UiSelector().text("Login / Sign up Form")'); }
+    /** Aba "Sign up" dentro da tela Login/Sign up (por description). */
+    get signUpTab() {
+        return $('android=new UiSelector().description("button-sign-up-container")');
+    }
+
+    /** Aba "Sign up" por texto (usada em 03_navigation). */
+    get signUpTabByText() {
+        return $('android=new UiSelector().text("Sign up")');
+    }
+
+    // ─── Campos ───────────────────────────────────────────────────────────────
+
+    /** Campo de e-mail (primeiro EditText da tela de sign up). */
+    get emailField() {
+        return $('android=new UiSelector().className("android.widget.EditText").instance(0)');
+    }
+
+    /** Campo de password (segundo EditText da tela de sign up). */
+    get passwordField() {
+        return $('android=new UiSelector().className("android.widget.EditText").instance(1)');
+    }
+
+    /** Campo de confirm password (terceiro EditText da tela de sign up). */
+    get confirmPasswordField() {
+        return $('android=new UiSelector().className("android.widget.EditText").instance(2)');
+    }
+
+    /** Accessibility ID do campo e-mail (usado em 03_navigation). */
+    get emailFieldById() {
+        return $('~input-email');
+    }
+
+    /** Accessibility ID do campo senha (usado em 03_navigation). */
+    get passwordFieldById() {
+        return $('~input-password');
+    }
+
+    /** Accessibility ID do campo confirm password (usado em 03_navigation). */
+    get repeatPasswordFieldById() {
+        return $('~input-repeat-password');
+    }
+
+    // ─── Buttons ──────────────────────────────────────────────────────────────
+
+    get signUpButton() {
+        return $('android=new UiSelector().text("SIGN UP")');
+    }
+
+    // ─── Modal de sucesso ─────────────────────────────────────────────────────
+
+    get alertTitle() {
+        return $('id=com.wdiodemoapp:id/alert_title');
+    }
+
+    /** Título do modal por texto (fallback). */
+    get alertTitleByText() {
+        return $('android=new UiSelector().text("Signed Up!")');
+    }
+
+    get alertOkButton() {
+        return $('android=new UiSelector().resourceId("android:id/button1")');
+    }
+
+    // ─── Mensagens de erro ────────────────────────────────────────────────────
+
+    get errorEmailMsg() {
+        return $('android=new UiSelector().text("Please enter a valid email address")');
+    }
+
+    get errorPasswordMsg() {
+        return $('android=new UiSelector().text("Please enter at least 8 characters")');
+    }
+
+    get errorConfirmPasswordMsg() {
+        return $('android=new UiSelector().text("Please enter the same password")');
+    }
 
     // ─── Actions ──────────────────────────────────────────────────────────────
 
+    /** Clica na aba Sign Up para trocar de aba dentro da tela Login/Sign up. */
+    async acessarAbaSignUp() {
+        await (await this.signUpTab).waitForDisplayed({ timeout: 10000 });
+        await (await this.signUpTab).click();
+    }
+
     /**
-     * Fill the sign-up form.
-     * Any field left undefined in the data object is skipped.
-     *
-     * @param {object} data
-     * @param {string} [data.firstName]
-     * @param {string} [data.lastName]
-     * @param {string} [data.email]
-     * @param {string} [data.password]
-     * @param {string} [data.confirmPassword]
+     * Preenche os campos de sign up.
+     * Campos com string vazia são limpos mas não preenchidos (testa validação).
      */
-    async fillSignUpForm({ firstName, lastName, email, password, confirmPassword } = {}) {
-        if (firstName !== undefined) {
-            const el = await this.firstNameInput;
-            await el.waitForDisplayed({ timeout: 15000 });
-            await el.clearValue();
-            await el.setValue(firstName);
-        }
-        if (lastName !== undefined) {
-            const el = await this.lastNameInput;
-            await el.clearValue();
-            await el.setValue(lastName);
-        }
-        if (email !== undefined) {
-            const el = await this.emailInput;
-            await el.clearValue();
-            await el.setValue(email);
-        }
-        if (password !== undefined) {
-            const el = await this.passwordInput;
-            await el.clearValue();
-            await el.setValue(password);
-        }
-        if (confirmPassword !== undefined) {
-            const el = await this.confirmPasswordInput;
-            await el.clearValue();
-            await el.setValue(confirmPassword);
-        }
-        await this.hideKeyboard();
+    async preencherCampos(username, password, confirmPassword) {
+        const email = await this.emailField;
+        await email.waitForDisplayed({ timeout: 10000 });
+        await email.setValue(username);
+
+        const pass = await this.passwordField;
+        await pass.waitForDisplayed({ timeout: 10000 });
+        await pass.setValue(password);
+
+        const confirm = await this.confirmPasswordField;
+        await confirm.waitForDisplayed({ timeout: 10000 });
+        await confirm.setValue(confirmPassword);
     }
 
-    /** Tap the Register / Sign Up button. */
-    async tapRegister() {
-        const el = await this.registerButton;
-        await el.waitForDisplayed({ timeout: 10000 });
-        await el.click();
-    }
-
-    /** Return the text of the first visible error message. */
-    async getErrorMessage() {
-        const el = await this.errorMessage;
-        await el.waitForDisplayed({ timeout: 8000 });
-        return el.getText();
-    }
-
-    /** Returns true when the Register button is displayed. */
-    async isSignUpPageDisplayed() {
-        return this.isDisplayed('~test-register-btn', 10000);
-    }
-
-    /** Returns true when the "Login / Sign up Form" title is visible. */
-    async isFormTitleDisplayed() {
-        const el = await this.formTitle;
-        await el.waitForDisplayed({ timeout: 10000 });
-        return el.isDisplayed();
-    }
-
-    /** Navigate back to the Login screen. */
-    async tapBackToLogin() {
-        await this.click('~test-back-to-login');
+    /** Clica no botão SIGN UP. */
+    async clicarSignUp() {
+        await (await this.signUpButton).waitForDisplayed({ timeout: 10000 });
+        await (await this.signUpButton).click();
     }
 }
 

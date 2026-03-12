@@ -3,38 +3,40 @@
 const BasePage = require('./BasePage');
 
 /**
- * HomePage — bottom navigation bar and the home/dashboard screen.
+ * HomePage — bottom navigation bar and home screen elements.
+ * Seletores extraídos de 03_navigation.spec.js.
  */
 class HomePage extends BasePage {
-    // ─── Selectors ────────────────────────────────────────────────────────────
+    // ─── Menu inferior ────────────────────────────────────────────────────────
 
-    get homeTab()       { return $('~Home'); }
-    get formsTab()      { return $('~Forms'); }
-    get swipeTab()      { return $('~Swipe'); }
-    get loginTab()      { return $('~Login'); }
-    get webviewTab()    { return $('~WebView'); }
-    get welcomeText()   { return $('~test-welcome-message'); }
+    get homeButton() {
+        return $('android=new UiSelector().text("Home")');
+    }
+
+    // ─── Elementos da tela Home ───────────────────────────────────────────────
+
+    get homeImage() {
+        return $('android=new UiSelector().className("android.widget.ImageView").instance(0)');
+    }
+
+    get webdriverTitle() {
+        return $('android=new UiSelector().text("WEBDRIVER")');
+    }
+
+    get supportText() {
+        return $('android=new UiSelector().text("Support")');
+    }
+
+    get demoText() {
+        return $('android=new UiSelector().text("Demo app for the appium-boilerplate")');
+    }
 
     // ─── Actions ──────────────────────────────────────────────────────────────
 
-    async tapHomeTab()    { await (await this.homeTab).click(); }
-    async tapFormsTab()   { await (await this.formsTab).click(); }
-    async tapSwipeTab()   { await (await this.swipeTab).click(); }
-    async tapLoginTab()   { await (await this.loginTab).click(); }
-    async tapWebviewTab() { await (await this.webviewTab).click(); }
-
-    /** Returns true when the Home tab is displayed (post-login anchor). */
-    async isHomePageDisplayed() {
-        return this.isDisplayed('~Home', 15000);
-    }
-
-    /** Return the welcome / headline text on the home screen. */
-    async getWelcomeText() {
-        try {
-            return this.getText('~test-welcome-message');
-        } catch {
-            return '';
-        }
+    /** Navega para a tela Home pelo menu inferior. */
+    async acessarTelaHome() {
+        await (await this.homeButton).waitForDisplayed({ timeout: 15000 });
+        await (await this.homeButton).click();
     }
 }
 

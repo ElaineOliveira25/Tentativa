@@ -1,37 +1,61 @@
 'use strict';
 
-// Ensure Android SDK is always discoverable by Appium
-process.env.ANDROID_HOME = process.env.ANDROID_HOME || '/home/elaineldo/Android/Sdk';
-process.env.ANDROID_SDK_ROOT = process.env.ANDROID_SDK_ROOT || '/home/elaineldo/Android/Sdk';
+const path = require('path');
+const { config: baseConfig } = require('./wdio.conf.JS');
 
-const { config: baseConfig } = require('./wdio.conf');
-const androidCaps = require('./config/caps.android');
-
+/**
+ * Android runner — herda toda a configuração base (hooks, reporters, screenshotHelper)
+ * e adiciona as capabilities e serviço Appium específicos para Android.
+ *
+ * Executar: npm run test:android
+ */
 exports.config = {
     ...baseConfig,
 
-    hostname: '127.0.0.1',
-    port: 4723,
-    path: '/',
+    // ─── Timeouts Android ─────────────────────────────────────────────────────
+    logLevel: 'error',
 
+    logLevels: {
+        webdriver: 'error',
+        '@wdio/appium-service': 'error',
+    },
+
+    waitforTimeout: 20000,
+    connectionRetryTimeout: 180000,
+    connectionRetryCount: 1,
+
+    mochaOpts: {
+        ui: 'bdd',
+        timeout: 120000,
+    },
+
+    // ─── Appium service ───────────────────────────────────────────────────────
     services: [
-        [
-            'appium',
-            {
-                command: 'appium',
-                args: {
-                    address: '127.0.0.1',
-                    port: 4723,
-                    relaxedSecurity: true,
-                    log: './appium-android.log',
-                },
+        ['appium', {
+            command: 'appium',
+            args: {
+                relaxedSecurity: true,
+                log: path.resolve(__dirname, 'appium.log'),
             },
-        ],
+        }],
     ],
 
-    capabilities: [androidCaps],
-
-    beforeSession() {
-        process.env.PLATFORM = 'Android';
-    },
+    // ─── Android capabilities ─────────────────────────────────────────────────
+    capabilities: [{
+        platformName: 'Android',
+        'appium:automationName': 'UiAutomator2',
+        'appium:deviceName': 'Android Emulator',
+        'appium:udid': 'emulator-5554',
+        'appium:app': path.resolve(__dirname, 'apps/android/android.wdio.native.app.v2.0.0.apk'),
+        'appium:autoGrantPermissions': true,
+        'appium:noReset': false,
+        'appium:fullReset': false,
+        'appium:newCommandTimeout': 240,
+        'appium:adbExecTimeout': 120000,
+        'appium:androidInstallTimeout': 120000,
+        'appium:uiautomator2ServerInstallTimeout': 120000,
+        'appium:uiautomator2ServerLaunchTimeout': 120000,
+        'appium:appWaitDuration': 30000,
+        'appium:disableWindowAnimation': true,
+    }],
 };

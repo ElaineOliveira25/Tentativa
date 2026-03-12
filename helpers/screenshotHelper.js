@@ -47,12 +47,16 @@ class ScreenshotHelper {
      * @returns {string}         Path of the saved screenshot
      */
     async captureAndAttach(testName) {
-        const filePath = await this.takeScreenshot(testName);
+        const safeName = (testName || 'screenshot').replace(/[^a-z0-9_-]/gi, '_').substring(0, 100);
+        const fileName = `${safeName}.png`;
+        const filePath  = path.join(this.dir, fileName);
+
+        const base64 = await browser.takeScreenshot();
+        fs.writeFileSync(filePath, Buffer.from(base64, 'base64'));
+        console.log(`📸  Screenshot saved: ${filePath}`);
 
         try {
-            // Dynamic require so the helper remains usable outside WDIO context
             const allureReporter = require('@wdio/allure-reporter').default;
-            const base64 = await browser.takeScreenshot();
             allureReporter.addAttachment(
                 `Failure Screenshot — ${testName}`,
                 Buffer.from(base64, 'base64'),

@@ -1,94 +1,133 @@
 'use strict';
 
-const { expect }    = require('chai');
-const allure        = require('@wdio/allure-reporter').default;
-const LoginPage     = require('../../pages/LoginPage');
-const HomePage      = require('../../pages/HomePage');
-const users         = require('../../data/users.json');
+const { expect } = require('chai');
+const allure = require('@wdio/allure-reporter').default;
+const LoginPage = require('../../pages/LoginPage');
+const dataLogin = require('../../data/dataLogin.json');
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TC-01 | TC-02 | TC-03 — Login feature
+// Funcionalidade: Login
+// Cenários positivos e negativos de autenticação
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('Login Feature', () => {
-
-    // Each spec resets to the Login screen by restarting the app activity.
+describe('Telade Login', () => {
     beforeEach(async () => {
         allure.addFeature('Login');
-        allure.addSuite('Authentication');
-        // Ensure we are on the Login screen before each test
-        if (!(await LoginPage.isLoginPageDisplayed())) {
-           await browser.reloadSession();
-        }
+
+        await driver.execute('mobile: terminateApp', { appId: 'com.wdiodemoapp' }).catch(() => {});
+        await driver.execute('mobile: activateApp', { appId: 'com.wdiodemoapp' });
     });
 
-    // ── TC-01 ─────────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
+    // TC-01
+    // Login com credenciais válidas
+    // ─────────────────────────────────────────────────────────────────────────
 
-    it('[TC-01] Should login successfully with valid credentials', async () => {
-        allure.addStory('Valid Login');
+    it('[TC-01] Deve realizar login com sucesso utilizando credenciais válidas', async () => {
+        allure.addStory('Login válido');
         allure.addSeverity('critical');
-        allure.addDescription(
-            'Verify that a registered user can log in with correct credentials '
-            + 'and is redirected to the Home screen.',
-        );
 
-        allure.startStep('Verify Login screen is displayed');
-        const loginVisible = await LoginPage.isLoginPageDisplayed();
-        expect(loginVisible, 'Login screen must be visible on app launch').to.be.true;
-        allure.endStep('passed');
+        await LoginPage.acessarTelaLogin();
 
-        allure.startStep('Enter valid username and password then tap Login');
-        await LoginPage.login(users.validUser.username, users.validUser.password);
-        allure.endStep('passed');
+        const loginSignUpTitle = await LoginPage.loginSignUpTitle;
+        expect(await loginSignUpTitle.isDisplayed()).to.be.true;
 
-        allure.startStep('Verify Home screen is displayed after login');
-        const homeVisible = await HomePage.isHomePageDisplayed();
-        expect(homeVisible, 'Home screen should appear after successful login').to.be.true;
-        allure.endStep('passed');
+        await LoginPage.aguardarCampos();
+        await LoginPage.login(dataLogin.validUser.username, dataLogin.validUser.password);
+
+        const alertTitle = await LoginPage.alertTitle;
+        await alertTitle.waitForDisplayed({ timeout: 20000 });
+        expect(await alertTitle.isDisplayed()).to.be.true;
+        expect(await alertTitle.getText()).to.equal('Success');
+
+        const alertMessage = await LoginPage.alertMessage;
+        await alertMessage.waitForDisplayed({ timeout: 10000 });
+        expect(await alertMessage.isDisplayed()).to.be.true;
+
+        const okButton = await LoginPage.alertOkButton;
+        await okButton.waitForDisplayed({ timeout: 10000 });
+        expect(await okButton.isDisplayed()).to.be.true;
+
+        await LoginPage.fecharModalSucesso();
     });
 
-    // ── TC-02 ─────────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
+    // TC-02
+    // Login sem preencher email e senha
+    // ─────────────────────────────────────────────────────────────────────────
 
-    it('[TC-02] Should show error message when logging in with invalid credentials', async () => {
-        allure.addStory('Invalid Login');
+    it('[TC-02] Deve exibir mensagens de erro ao tentar logar sem preencher email e senha', async () => {
+        allure.addStory('Validação de campos obrigatórios');
         allure.addSeverity('high');
-        allure.addDescription(
-            'Verify that an error message is displayed when the user submits '
-            + 'credentials that do not match any account.',
-        );
 
-        allure.startStep('Enter invalid credentials and tap Login');
-        await LoginPage.login(users.invalidUser.username, users.invalidUser.password);
-        allure.endStep('passed');
+        await LoginPage.acessarTelaLogin();
+        await LoginPage.aguardarCampos();
+        await LoginPage.clicarLoginSemPreencher();
 
-        allure.startStep('Verify error message is displayed');
-        const errorText = await LoginPage.getErrorMessage();
-        expect(errorText, 'An error message should be present').to.not.be.empty;
-        allure.endStep('passed');
+        const erroEmail = await LoginPage.errorEmailMsg;
+        const erroSenha = await LoginPage.errorPasswordMsg;
 
-        allure.startStep('Verify Login screen is still displayed (not navigated away)');
-        const stillOnLogin = await LoginPage.isLoginPageDisplayed();
-        expect(stillOnLogin, 'User should remain on the Login screen').to.be.true;
-        allure.endStep('passed');
+        await erroEmail.waitForDisplayed({ timeout: 10000 });
+        await erroSenha.waitForDisplayed({ timeout: 10000 });
+
+        expect(await erroEmail.isDisplayed()).to.be.true;
+        expect(await erroSenha.isDisplayed()).to.be.true;
     });
 
-    // ── TC-03 ─────────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
+    // TC-03
+    // Login com email inválido
+    // ─────────────────────────────────────────────────────────────────────────
 
-    it('[TC-03] Should show validation error when submitting empty login form', async () => {
-        allure.addStory('Login Required Field Validation');
-        allure.addSeverity('medium');
-        allure.addDescription(
-            'Verify that required-field validation is triggered when the login '
-            + 'form is submitted without any credentials.',
-        );
+    it('[TC-03] Deve exibir mensagem de erro ao informar email inválido', async () => {
+        allure.addStory('Validação de email inválido');
+        allure.addSeverity('high');
 
-        allure.startStep('Tap Login without entering any credentials');
-        await LoginPage.login(users.emptyUser.username, users.emptyUser.password);
-        allure.endStep('passed');
+        await LoginPage.acessarTelaLogin();
+        await LoginPage.aguardarCampos();
+        await LoginPage.login(dataLogin.invalidEmail.username, dataLogin.invalidEmail.password);
 
-        allure.startStep('Verify an error or validation message is displayed');
-        const errorVisible = await LoginPage.isDisplayed('~test-error-message', 8000);
-        expect(errorVisible, 'A validation error message must appear for empty fields').to.be.true;
-        allure.endStep('passed');
+        const erroEmail = await LoginPage.errorEmailMsg;
+        await erroEmail.waitForDisplayed({ timeout: 10000 });
+
+        expect(await erroEmail.isDisplayed()).to.be.true;
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // TC-04
+    // Login com email válido e senha vazia
+    // ─────────────────────────────────────────────────────────────────────────
+
+    it('[TC-04] Deve exibir mensagem de erro quando a senha não for preenchida', async () => {
+        allure.addStory('Senha obrigatória');
+        allure.addSeverity('high');
+
+        await LoginPage.acessarTelaLogin();
+        await LoginPage.aguardarCampos();
+        await LoginPage.login(dataLogin.validEmailEmptyPassword.username, '');
+
+        const erroSenha = await LoginPage.errorPasswordMsg;
+        await erroSenha.waitForDisplayed({ timeout: 10000 });
+
+        expect(await erroSenha.isDisplayed()).to.be.true;
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // TC-05
+    // Login com senha menor que 8 caracteres
+    // ─────────────────────────────────────────────────────────────────────────
+
+    it('[TC-05] Deve exibir erro quando a senha possuir menos de 8 caracteres', async () => {
+        allure.addStory('Validação de tamanho da senha');
+        allure.addSeverity('high');
+
+        await LoginPage.acessarTelaLogin();
+        await LoginPage.aguardarCampos();
+        await LoginPage.login(dataLogin.shortPassword.username, dataLogin.shortPassword.password);
+
+        const erroSenha = await LoginPage.errorPasswordMsg;
+        await erroSenha.waitForDisplayed({ timeout: 10000 });
+
+        expect(await erroSenha.isDisplayed()).to.be.true;
     });
 });

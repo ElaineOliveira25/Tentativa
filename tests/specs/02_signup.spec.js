@@ -1,90 +1,260 @@
 'use strict';
 
-const { expect }  = require('chai');
-const allure      = require('@wdio/allure-reporter').default;
-const LoginPage   = require('../../pages/LoginPage');
-const SignUpPage  = require('../../pages/SignUpPage');
-const users       = require('../../data/users.json');
+const { expect } = require('chai');
+const allure = require('@wdio/allure-reporter').default;
+const LoginPage = require('../../pages/LoginPage');
+const SignUpPage = require('../../pages/SignUpPage');
+const dataSignUp = require('../../data/dataSignUp.json');
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TC-04 | TC-05 — Sign Up feature
+// Funcionalidade: Sign Up
+// Cenários positivos e negativos de cadastro
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('Sign Up Feature', () => {
-
+describe('Tela de Sign Up', () => {
     beforeEach(async () => {
         allure.addFeature('Sign Up');
-        allure.addSuite('Registration');
 
-        // Start from the Login screen
-        if (!(await LoginPage.isLoginPageDisplayed())) {
-            await browser.reloadSession();
-        }
-        // Navigate to Sign Up
-        await LoginPage.tapSignUpLink();
-        const signUpVisible = await SignUpPage.isSignUpPageDisplayed();
-        expect(signUpVisible, 'Sign Up screen must be reachable from Login').to.be.true;
-
-        // Validate that the form title is displayed
-        const titleVisible = await SignUpPage.isFormTitleDisplayed();
-        expect(titleVisible, '"Login / Sign up Form" title must be visible').to.be.true;
+        await driver.execute('mobile: terminateApp', { appId: 'com.wdiodemoapp' }).catch(() => {});
+        await driver.execute('mobile: activateApp', { appId: 'com.wdiodemoapp' });
     });
 
-    // ── TC-04 ─────────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
+    // TC-01
+    // Cadastro com dados válidos
+    // ─────────────────────────────────────────────────────────────────────────
 
-    it('[TC-04] Should register a new user successfully with valid data', async () => {
-        allure.addStory('Valid Sign Up');
+    it('[TC-01] Deve realizar cadastro com sucesso ao informar dados válidos', async () => {
+        allure.addStory('Cadastro válido');
         allure.addSeverity('critical');
-        allure.addDescription(
-            'Verify that a new user can complete the sign-up form with valid data '
-            + 'and is redirected to the Login screen upon success.',
+
+        await LoginPage.acessarTelaLogin();
+
+        const loginSignUpTitle = await LoginPage.loginSignUpTitle;
+        expect(await loginSignUpTitle.isDisplayed()).to.be.true;
+
+        await SignUpPage.acessarAbaSignUp();
+
+        await SignUpPage.preencherCampos(
+            dataSignUp.validSignUpUser.username,
+            dataSignUp.validSignUpUser.password,
+            dataSignUp.validSignUpUser.confirmPassword,
         );
 
-        // Use a unique email so the test is repeatable across runs
-        const uniqueEmail = `tc04_${Date.now()}@test.com`;
+        await SignUpPage.clicarSignUp();
 
-        allure.startStep('Fill sign-up form with valid data');
-        await SignUpPage.fillSignUpForm({
-            firstName:       users.newUser.firstName,
-            lastName:        users.newUser.lastName,
-            email:           uniqueEmail,
-            password:        users.newUser.password,
-            confirmPassword: users.newUser.confirmPassword,
-        });
-        allure.endStep('passed');
+        const alertTitle = await SignUpPage.alertTitle;
+        await alertTitle.waitForDisplayed({ timeout: 20000 });
+        expect(await alertTitle.isDisplayed()).to.be.true;
+        expect(await alertTitle.getText()).to.equal('Signed Up!');
 
-        allure.startStep('Tap the Register button');
-        await SignUpPage.tapRegister();
-        allure.endStep('passed');
+        const alertTitleByText = await SignUpPage.alertTitleByText;
+        await alertTitleByText.waitForDisplayed({ timeout: 10000 });
+        expect(await alertTitleByText.isDisplayed()).to.be.true;
 
-        allure.startStep('Verify redirect to Login screen after successful registration');
-        const onLogin = await LoginPage.isLoginPageDisplayed();
-        expect(onLogin, 'App should redirect to Login after sign-up').to.be.true;
-        allure.endStep('passed');
+        const okButton = await SignUpPage.alertOkButton;
+        await okButton.waitForDisplayed({ timeout: 10000 });
+        expect(await okButton.isDisplayed()).to.be.true;
     });
 
-    // ── TC-05 ─────────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
+    // TC-02
+    // Cadastro com todos os campos vazios
+    // ─────────────────────────────────────────────────────────────────────────
 
-    it('[TC-05] Should show validation error when sign-up form is submitted empty', async () => {
-        allure.addStory('Sign Up Required Field Validation');
-        allure.addSeverity('medium');
-        allure.addDescription(
-            'Verify that all required-field validations are triggered when '
-            + 'the sign-up form is submitted without any input.',
+    it('[TC-02] Deve exibir mensagens de erro ao tentar cadastrar com todos os campos vazios', async () => {
+        allure.addStory('Validação de campos obrigatórios');
+        allure.addSeverity('high');
+
+        await LoginPage.acessarTelaLogin();
+        await SignUpPage.acessarAbaSignUp();
+        await SignUpPage.clicarSignUp();
+
+        const erroEmail = await SignUpPage.errorEmailMsg;
+        const erroPassword = await SignUpPage.errorPasswordMsg;
+        const erroConfirmPassword = await SignUpPage.errorConfirmPasswordMsg;
+
+        await erroEmail.waitForDisplayed({ timeout: 10000 });
+        await erroPassword.waitForDisplayed({ timeout: 10000 });
+        await erroConfirmPassword.waitForDisplayed({ timeout: 10000 });
+
+        expect(await erroEmail.isDisplayed()).to.be.true;
+        expect(await erroPassword.isDisplayed()).to.be.true;
+        expect(await erroConfirmPassword.isDisplayed()).to.be.true;
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // TC-03
+    // Cadastro com email inválido
+    // ─────────────────────────────────────────────────────────────────────────
+
+    it('[TC-03] Deve exibir mensagem de erro ao informar email inválido', async () => {
+        allure.addStory('Validação de email inválido');
+        allure.addSeverity('high');
+
+        await LoginPage.acessarTelaLogin();
+        await SignUpPage.acessarAbaSignUp();
+
+        await SignUpPage.preencherCampos(
+            dataSignUp.invalidEmailSignUpUser.username,
+            dataSignUp.invalidEmailSignUpUser.password,
+            dataSignUp.invalidEmailSignUpUser.confirmPassword,
         );
 
-        allure.startStep('Tap Register without filling any field');
-        await SignUpPage.tapRegister();
-        allure.endStep('passed');
+        await SignUpPage.clicarSignUp();
 
-        allure.startStep('Verify at least one validation error message is displayed');
-        const errorVisible = await SignUpPage.isDisplayed('~test-error-message', 8000);
-        expect(errorVisible, 'A validation error message must appear for an empty form').to.be.true;
-        allure.endStep('passed');
+        const erroEmail = await SignUpPage.errorEmailMsg;
+        await erroEmail.waitForDisplayed({ timeout: 10000 });
+        expect(await erroEmail.isDisplayed()).to.be.true;
+    });
 
-        allure.startStep('Verify user remains on the Sign Up screen');
-        const stillOnSignUp = await SignUpPage.isSignUpPageDisplayed();
-        expect(stillOnSignUp, 'User should stay on the Sign Up screen after failed submission').to.be.true;
-        allure.endStep('passed');
+    // ─────────────────────────────────────────────────────────────────────────
+    // TC-04
+    // Cadastro com password menor que 8 caracteres
+    // ─────────────────────────────────────────────────────────────────────────
+
+    it('[TC-04] Deve exibir erro quando o password possuir menos de 8 caracteres', async () => {
+        allure.addStory('Validação de tamanho do password');
+        allure.addSeverity('high');
+
+        await LoginPage.acessarTelaLogin();
+        await SignUpPage.acessarAbaSignUp();
+
+        await SignUpPage.preencherCampos(
+            dataSignUp.shortPasswordSignUpUser.username,
+            dataSignUp.shortPasswordSignUpUser.password,
+            dataSignUp.shortPasswordSignUpUser.confirmPassword,
+        );
+
+        await SignUpPage.clicarSignUp();
+
+        const erroPassword = await SignUpPage.errorPasswordMsg;
+        await erroPassword.waitForDisplayed({ timeout: 10000 });
+        expect(await erroPassword.isDisplayed()).to.be.true;
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // TC-05
+    // Cadastro com confirm password menor que 8 caracteres
+    // ─────────────────────────────────────────────────────────────────────────
+
+    it('[TC-05] Deve exibir erro quando o confirm password possuir menos de 8 caracteres', async () => {
+        allure.addStory('Validação de tamanho do confirm password');
+        allure.addSeverity('high');
+
+        await LoginPage.acessarTelaLogin();
+        await SignUpPage.acessarAbaSignUp();
+
+        await SignUpPage.preencherCampos(
+            dataSignUp.shortConfirmPasswordUser.username,
+            dataSignUp.shortConfirmPasswordUser.password,
+            dataSignUp.shortConfirmPasswordUser.confirmPassword,
+        );
+
+        await SignUpPage.clicarSignUp();
+
+        const erroConfirmPassword = await SignUpPage.errorConfirmPasswordMsg;
+        await erroConfirmPassword.waitForDisplayed({ timeout: 10000 });
+        expect(await erroConfirmPassword.isDisplayed()).to.be.true;
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // TC-06
+    // Cadastro com password vazio
+    // ─────────────────────────────────────────────────────────────────────────
+
+    it('[TC-06] Deve exibir erro quando o password não for preenchido', async () => {
+        allure.addStory('Password obrigatório');
+        allure.addSeverity('high');
+
+        await LoginPage.acessarTelaLogin();
+        await SignUpPage.acessarAbaSignUp();
+
+        await SignUpPage.preencherCampos(
+            dataSignUp.emptyPasswordSignUpUser.username,
+            dataSignUp.emptyPasswordSignUpUser.password,
+            dataSignUp.emptyPasswordSignUpUser.confirmPassword,
+        );
+
+        await SignUpPage.clicarSignUp();
+
+        const erroPassword = await SignUpPage.errorPasswordMsg;
+        await erroPassword.waitForDisplayed({ timeout: 10000 });
+        expect(await erroPassword.isDisplayed()).to.be.true;
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // TC-07
+    // Cadastro com confirm password vazio
+    // ─────────────────────────────────────────────────────────────────────────
+
+    it('[TC-07] Deve exibir erro quando o confirm password não for preenchido', async () => {
+        allure.addStory('Confirm Password obrigatório');
+        allure.addSeverity('high');
+
+        await LoginPage.acessarTelaLogin();
+        await SignUpPage.acessarAbaSignUp();
+
+        await SignUpPage.preencherCampos(
+            dataSignUp.emptyConfirmPasswordSignUpUser.username,
+            dataSignUp.emptyConfirmPasswordSignUpUser.password,
+            dataSignUp.emptyConfirmPasswordSignUpUser.confirmPassword,
+        );
+
+        await SignUpPage.clicarSignUp();
+
+        const erroConfirmPassword = await SignUpPage.errorConfirmPasswordMsg;
+        await erroConfirmPassword.waitForDisplayed({ timeout: 10000 });
+        expect(await erroConfirmPassword.isDisplayed()).to.be.true;
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // TC-08
+    // Cadastro com email vazio
+    // ─────────────────────────────────────────────────────────────────────────
+
+    it('[TC-08] Deve exibir erro quando o email não for preenchido', async () => {
+        allure.addStory('Email obrigatório');
+        allure.addSeverity('high');
+
+        await LoginPage.acessarTelaLogin();
+        await SignUpPage.acessarAbaSignUp();
+
+        await SignUpPage.preencherCampos(
+            dataSignUp.emptyEmailSignUpUser.username,
+            dataSignUp.emptyEmailSignUpUser.password,
+            dataSignUp.emptyEmailSignUpUser.confirmPassword,
+        );
+
+        await SignUpPage.clicarSignUp();
+
+        const erroEmail = await SignUpPage.errorEmailMsg;
+        await erroEmail.waitForDisplayed({ timeout: 10000 });
+        expect(await erroEmail.isDisplayed()).to.be.true;
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // TC-09
+    // Cadastro com password e confirm password diferentes
+    // ─────────────────────────────────────────────────────────────────────────
+
+    it('[TC-09] Deve exibir erro quando password e confirm password forem diferentes', async () => {
+        allure.addStory('Validação de confirmação de password');
+        allure.addSeverity('high');
+
+        await LoginPage.acessarTelaLogin();
+        await SignUpPage.acessarAbaSignUp();
+
+        await SignUpPage.preencherCampos(
+            dataSignUp.mismatchedPasswordSignUpUser.username,
+            dataSignUp.mismatchedPasswordSignUpUser.password,
+            dataSignUp.mismatchedPasswordSignUpUser.confirmPassword,
+        );
+
+        await SignUpPage.clicarSignUp();
+
+        const erroConfirmPassword = await SignUpPage.errorConfirmPasswordMsg;
+        await erroConfirmPassword.waitForDisplayed({ timeout: 10000 });
+        expect(await erroConfirmPassword.isDisplayed()).to.be.true;
     });
 });

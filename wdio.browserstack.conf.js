@@ -1,6 +1,6 @@
 'use strict';
 
-const { config: baseConfig } = require('./wdio.conf');
+const { config: baseConfig } = require('./wdio.conf.JS');
 const bsCaps = require('./config/caps.browserstack');
 
 /**
