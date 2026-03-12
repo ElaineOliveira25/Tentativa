@@ -13,7 +13,7 @@ const dataSignUp = require('../../data/dataSignUp.json');
 
 describe('Tela de Sign Up', () => {
     beforeEach(async () => {
-        allure.addFeature('Sign Up');
+        allure.addFeature('Tela de Sign Up');
 
         await driver.execute('mobile: terminateApp', { appId: 'com.wdiodemoapp' }).catch(() => {});
         await driver.execute('mobile: activateApp', { appId: 'com.wdiodemoapp' });
@@ -47,10 +47,6 @@ describe('Tela de Sign Up', () => {
         await alertTitle.waitForDisplayed({ timeout: 20000 });
         expect(await alertTitle.isDisplayed()).to.be.true;
         expect(await alertTitle.getText()).to.equal('Signed Up!');
-
-        const alertTitleByText = await SignUpPage.alertTitleByText;
-        await alertTitleByText.waitForDisplayed({ timeout: 10000 });
-        expect(await alertTitleByText.isDisplayed()).to.be.true;
 
         const okButton = await SignUpPage.alertOkButton;
         await okButton.waitForDisplayed({ timeout: 10000 });

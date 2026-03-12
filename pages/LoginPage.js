@@ -81,8 +81,9 @@ class LoginPage extends BasePage {
 
     /** Navega até a tela de Login pelo menu inferior e valida o título. */
     async acessarTelaLogin() {
-        await (await this.loginMenuButton).waitForDisplayed({ timeout: 15000 });
-        await (await this.loginMenuButton).click();
+        const menuBtn = await this.loginMenuButton;
+        await menuBtn.waitForDisplayed({ timeout: 15000 });
+        await menuBtn.click();
         await (await this.loginSignUpTitle).waitForDisplayed({ timeout: 15000 });
     }
 
@@ -113,14 +114,16 @@ class LoginPage extends BasePage {
 
     /** Clica no botão LOGIN sem preencher nenhum campo. */
     async clicarLoginSemPreencher() {
-        await (await this.loginButton).waitForDisplayed({ timeout: 15000 });
-        await (await this.loginButton).click();
+        const btn = await this.loginButton;
+        await btn.waitForDisplayed({ timeout: 15000 });
+        await btn.click();
     }
 
     /** Fecha o modal de sucesso clicando em OK. */
     async fecharModalSucesso() {
-        await (await this.alertOkButton).waitForDisplayed({ timeout: 10000 });
-        await (await this.alertOkButton).click();
+        const btn = await this.alertOkButton;
+        await btn.waitForDisplayed({ timeout: 10000 });
+        await btn.click();
     }
 }
 

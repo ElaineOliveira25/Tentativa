@@ -2,10 +2,19 @@
 
 const { expect } = require('chai');
 const allure = require('@wdio/allure-reporter').default;
+const FormPage = require('../../pages/FormPage');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Funcionalidade: Forms
+// Preenchimento, interações e validação do modal
+// ─────────────────────────────────────────────────────────────────────────────
 
 describe('Preenchimento do formulário', () => {
     beforeEach(async () => {
-        allure.addFeature('Forms');
+        allure.addFeature('Preenchimento do formulário');
+
+        await driver.execute('mobile: terminateApp', { appId: 'com.wdiodemoapp' }).catch(() => {});
+        await driver.execute('mobile: activateApp', { appId: 'com.wdiodemoapp' });
     });
 
     it('[TC-10] Deve preencher o formulário, interagir com switch e dropdown, e validar o modal', async () => {
@@ -16,113 +25,90 @@ describe('Preenchimento do formulário', () => {
             + 'e exibição/fechamento do modal ao selecionar Active.',
         );
 
+        // ─────────────────────────────────────────────────────────────────────
         // Acessar tela Forms
+        // ─────────────────────────────────────────────────────────────────────
         allure.startStep('Clicar em Forms e validar elementos principais da tela');
 
-        const formsButton = $('android=new UiSelector().text("Forms")');
-        await formsButton.waitForDisplayed({ timeout: 15000 });
-        await formsButton.click();
+        await FormPage.acessarTelaForms();
 
-        const formComponentsTitle = $('android=new UiSelector().text("Form components")');
-        await formComponentsTitle.waitForDisplayed({ timeout: 15000 });
-        expect(await formComponentsTitle.isDisplayed()).to.be.true;
+        await (await FormPage.formComponentsTitle).waitForDisplayed({ timeout: 15000 });
+        expect(await (await FormPage.formComponentsTitle).isDisplayed()).to.be.true;
 
         allure.endStep('passed');
 
+        // ─────────────────────────────────────────────────────────────────────
         // Preencher campo de texto
+        // ─────────────────────────────────────────────────────────────────────
         allure.startStep('Preencher o campo text-input e validar o texto refletido');
 
-        const textInput = $('~text-input');
-        await textInput.waitForDisplayed({ timeout: 15000 });
-        await textInput.click();
-        await textInput.clearValue();
-        await textInput.setValue('Teste de QA');
+        await FormPage.preencherTextInput('Teste de QA');
 
-        const inputTextResult = $('android=new UiSelector().description("input-text-result")');
+        const inputTextResult = await FormPage.inputTextResultByDesc;
         await inputTextResult.waitForDisplayed({ timeout: 15000 });
-        expect(await inputTextResult.isDisplayed()).to.be.true;
-
-        const inputTextResultText = await inputTextResult.getText();
-        expect(inputTextResultText).to.equal('Teste de QA');
+        expect(await inputTextResult.getText()).to.equal('Teste de QA');
 
         allure.endStep('passed');
 
+        // ─────────────────────────────────────────────────────────────────────
         // Interagir com switch
+        // ─────────────────────────────────────────────────────────────────────
         allure.startStep('Validar texto inicial do switch, clicar no switch e validar mudança');
 
-        const switchTextOff = $('android=new UiSelector().text("Click to turn the switch ON")');
-        await switchTextOff.waitForDisplayed({ timeout: 15000 });
-        expect(await switchTextOff.isDisplayed()).to.be.true;
+        await (await FormPage.switchTextOff).waitForDisplayed({ timeout: 15000 });
+        expect(await (await FormPage.switchTextOff).isDisplayed()).to.be.true;
 
-        const switchButton = $('android=new UiSelector().className("android.widget.Switch")');
-        await switchButton.waitForDisplayed({ timeout: 15000 });
-        await switchButton.click();
+        await FormPage.clicarSwitch();
 
-        const switchTextOn = $('android=new UiSelector().text("Click to turn the switch OFF")');
-        await switchTextOn.waitForDisplayed({ timeout: 15000 });
-        expect(await switchTextOn.isDisplayed()).to.be.true;
+        await (await FormPage.switchTextOn).waitForDisplayed({ timeout: 15000 });
+        expect(await (await FormPage.switchTextOn).isDisplayed()).to.be.true;
 
         allure.endStep('passed');
 
+        // ─────────────────────────────────────────────────────────────────────
         // Selecionar opção no dropdown
+        // ─────────────────────────────────────────────────────────────────────
         allure.startStep('Selecionar opção no dropdown e validar valor selecionado');
 
-        const dropdownField = $('android=new UiSelector().resourceId("text_input")');
-        await dropdownField.waitForDisplayed({ timeout: 15000 });
-        await dropdownField.click();
+        await FormPage.selecionarOpcaoDropdown();
 
-        const dropdownOption = $('android=new UiSelector().text("webdriver.io is awesome")');
-        await dropdownOption.waitForDisplayed({ timeout: 15000 });
-        await dropdownOption.click();
-
-        const selectedText = await dropdownField.getText();
-        expect(selectedText).to.equal('webdriver.io is awesome');
+        expect(await (await FormPage.dropdownField).getText()).to.equal('webdriver.io is awesome');
 
         allure.endStep('passed');
 
+        // ─────────────────────────────────────────────────────────────────────
         // Abrir modal
+        // ─────────────────────────────────────────────────────────────────────
         allure.startStep('Clicar em Inactive, depois em Active e validar exibição do modal');
 
-        const inactiveButton = $('android=new UiSelector().text("Inactive")');
-        await inactiveButton.waitForDisplayed({ timeout: 15000 });
-        await inactiveButton.click();
+        await FormPage.abrirModal();
 
-        const activeButton = $('android=new UiSelector().text("Active")');
-        await activeButton.waitForDisplayed({ timeout: 15000 });
-        await activeButton.click();
+        await (await FormPage.modalTitle).waitForDisplayed({ timeout: 15000 });
+        expect(await (await FormPage.modalTitle).isDisplayed()).to.be.true;
 
-        const modalTitle = $('android=new UiSelector().resourceId("com.wdiodemoapp:id/alert_title")');
-        await modalTitle.waitForDisplayed({ timeout: 15000 });
-        expect(await modalTitle.isDisplayed()).to.be.true;
+        await (await FormPage.modalMessage).waitForDisplayed({ timeout: 15000 });
+        expect(await (await FormPage.modalMessage).isDisplayed()).to.be.true;
 
-        const modalMessage = $('android=new UiSelector().resourceId("android:id/message")');
-        await modalMessage.waitForDisplayed({ timeout: 15000 });
-        expect(await modalMessage.isDisplayed()).to.be.true;
+        await (await FormPage.modalButton1).waitForDisplayed({ timeout: 15000 });
+        expect(await (await FormPage.modalButton1).isDisplayed()).to.be.true;
 
-        const modalButton3 = $('android=new UiSelector().resourceId("android:id/button3")');
-        await modalButton3.waitForDisplayed({ timeout: 15000 });
-        expect(await modalButton3.isDisplayed()).to.be.true;
+        await (await FormPage.modalButton2).waitForDisplayed({ timeout: 15000 });
+        expect(await (await FormPage.modalButton2).isDisplayed()).to.be.true;
 
-        const modalButton2 = $('android=new UiSelector().resourceId("android:id/button2")');
-        await modalButton2.waitForDisplayed({ timeout: 15000 });
-        expect(await modalButton2.isDisplayed()).to.be.true;
-
-        const modalButton1 = $('//android.widget.Button[@resource-id="android:id/button1"]');
-        await modalButton1.waitForDisplayed({ timeout: 15000 });
-        expect(await modalButton1.isDisplayed()).to.be.true;
+        await (await FormPage.modalButton3).waitForDisplayed({ timeout: 15000 });
+        expect(await (await FormPage.modalButton3).isDisplayed()).to.be.true;
 
         allure.endStep('passed');
 
+        // ─────────────────────────────────────────────────────────────────────
         // Fechar modal
+        // ─────────────────────────────────────────────────────────────────────
         allure.startStep('Clicar no botão principal do modal e validar que ele foi fechado');
 
-        await modalButton1.click();
+        await FormPage.fecharModal();
 
-        const modalTitleClosed = $('android=new UiSelector().resourceId("com.wdiodemoapp:id/alert_title")');
-        const modalMessageClosed = $('android=new UiSelector().resourceId("android:id/message")');
-
-        await modalTitleClosed.waitForDisplayed({ timeout: 5000, reverse: true });
-        await modalMessageClosed.waitForDisplayed({ timeout: 5000, reverse: true });
+        await (await FormPage.modalTitle).waitForDisplayed({ timeout: 5000, reverse: true });
+        await (await FormPage.modalMessage).waitForDisplayed({ timeout: 5000, reverse: true });
 
         allure.endStep('passed');
     });

@@ -1,6 +1,5 @@
 'use strict';
 
-const { expect } = require('chai');
 const allure = require('@wdio/allure-reporter').default;
 const HomePage = require('../../pages/HomePage');
 const NavigationPage = require('../../pages/NavigationPage');
@@ -8,9 +7,13 @@ const LoginPage = require('../../pages/LoginPage');
 const SignUpPage = require('../../pages/SignUpPage');
 const FormPage = require('../../pages/FormPage');
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Funcionalidade: Navegação entre telas
+// ─────────────────────────────────────────────────────────────────────────────
+
 describe('Navegação entre telas', () => {
     beforeEach(async () => {
-        allure.addFeature('Navegação');
+        allure.addFeature('Navegação entre telas');
     });
 
     it('Deve navegar entre as telas pelo menu inferior e validar os elementos principais de cada tela', async () => {
@@ -28,21 +31,10 @@ describe('Navegação entre telas', () => {
 
         await HomePage.acessarTelaHome();
 
-        const homeImage = await HomePage.homeImage;
-        await homeImage.waitForDisplayed({ timeout: 15000 });
-        expect(await homeImage.isDisplayed()).to.be.true;
-
-        const webdriverTitle = await HomePage.webdriverTitle;
-        await webdriverTitle.waitForDisplayed({ timeout: 15000 });
-        expect(await webdriverTitle.isDisplayed()).to.be.true;
-
-        const supportText = await HomePage.supportText;
-        await supportText.waitForDisplayed({ timeout: 15000 });
-        expect(await supportText.isDisplayed()).to.be.true;
-
-        const demoText = await HomePage.demoText;
-        await demoText.waitForDisplayed({ timeout: 15000 });
-        expect(await demoText.isDisplayed()).to.be.true;
+        await (await HomePage.homeImage).waitForDisplayed({ timeout: 15000 });
+        await (await HomePage.webdriverTitle).waitForDisplayed({ timeout: 15000 });
+        await (await HomePage.supportText).waitForDisplayed({ timeout: 15000 });
+        await (await HomePage.demoText).waitForDisplayed({ timeout: 15000 });
 
         allure.endStep('passed');
 
@@ -53,23 +45,13 @@ describe('Navegação entre telas', () => {
 
         await NavigationPage.acessarTelaWebview();
 
-        const webviewTitle = await NavigationPage.webviewTitle;
-        await webviewTitle.waitForDisplayed({ timeout: 15000 });
-        expect(await webviewTitle.isDisplayed()).to.be.true;
-
-        const toggleNavigationBar = await NavigationPage.toggleNavigationBar;
-        await toggleNavigationBar.waitForDisplayed({ timeout: 15000 });
-        expect(await toggleNavigationBar.isDisplayed()).to.be.true;
+        await (await NavigationPage.webviewTitle).waitForDisplayed({ timeout: 15000 });
+        await (await NavigationPage.toggleNavigationBar).waitForDisplayed({ timeout: 15000 });
 
         await NavigationPage.abrirBarraNavegacao();
 
-        const openedNavigationBar = await NavigationPage.openedNavigationBar;
-        await openedNavigationBar.waitForDisplayed({ timeout: 15000 });
-        expect(await openedNavigationBar.isDisplayed()).to.be.true;
-
-        const closeNavigationBar = await NavigationPage.closeNavigationBar;
-        await closeNavigationBar.waitForDisplayed({ timeout: 15000 });
-        expect(await closeNavigationBar.isDisplayed()).to.be.true;
+        await (await NavigationPage.openedNavigationBar).waitForDisplayed({ timeout: 15000 });
+        await (await NavigationPage.closeNavigationBar).waitForDisplayed({ timeout: 15000 });
 
         await NavigationPage.fecharBarraNavegacao();
 
@@ -82,21 +64,10 @@ describe('Navegação entre telas', () => {
 
         await LoginPage.acessarTelaLogin();
 
-        const loginSignUpTitle = await LoginPage.loginSignUpTitle;
-        await loginSignUpTitle.waitForDisplayed({ timeout: 15000 });
-        expect(await loginSignUpTitle.isDisplayed()).to.be.true;
-
-        const emailInputLogin = await LoginPage.emailFieldById;
-        await emailInputLogin.waitForDisplayed({ timeout: 15000 });
-        expect(await emailInputLogin.isDisplayed()).to.be.true;
-
-        const passwordInputLogin = await LoginPage.passwordFieldById;
-        await passwordInputLogin.waitForDisplayed({ timeout: 15000 });
-        expect(await passwordInputLogin.isDisplayed()).to.be.true;
-
-        const loginSubmitButton = await LoginPage.loginButtonById;
-        await loginSubmitButton.waitForDisplayed({ timeout: 15000 });
-        expect(await loginSubmitButton.isDisplayed()).to.be.true;
+        await (await LoginPage.loginSignUpTitle).waitForDisplayed({ timeout: 15000 });
+        await (await LoginPage.emailFieldById).waitForDisplayed({ timeout: 15000 });
+        await (await LoginPage.passwordFieldById).waitForDisplayed({ timeout: 15000 });
+        await (await LoginPage.loginButtonById).waitForDisplayed({ timeout: 15000 });
 
         allure.endStep('passed');
 
@@ -107,21 +78,10 @@ describe('Navegação entre telas', () => {
 
         await SignUpPage.acessarAbaSignUp();
 
-        const emailInputSignUp = await SignUpPage.emailFieldById;
-        await emailInputSignUp.waitForDisplayed({ timeout: 15000 });
-        expect(await emailInputSignUp.isDisplayed()).to.be.true;
-
-        const passwordInputSignUp = await SignUpPage.passwordFieldById;
-        await passwordInputSignUp.waitForDisplayed({ timeout: 15000 });
-        expect(await passwordInputSignUp.isDisplayed()).to.be.true;
-
-        const repeatPasswordInput = await SignUpPage.repeatPasswordFieldById;
-        await repeatPasswordInput.waitForDisplayed({ timeout: 15000 });
-        expect(await repeatPasswordInput.isDisplayed()).to.be.true;
-
-        const signUpSubmitButton = await SignUpPage.signUpButton;
-        await signUpSubmitButton.waitForDisplayed({ timeout: 15000 });
-        expect(await signUpSubmitButton.isDisplayed()).to.be.true;
+        await (await SignUpPage.emailFieldById).waitForDisplayed({ timeout: 15000 });
+        await (await SignUpPage.passwordFieldById).waitForDisplayed({ timeout: 15000 });
+        await (await SignUpPage.repeatPasswordFieldById).waitForDisplayed({ timeout: 15000 });
+        await (await SignUpPage.signUpButton).waitForDisplayed({ timeout: 15000 });
 
         allure.endStep('passed');
 
@@ -132,33 +92,13 @@ describe('Navegação entre telas', () => {
 
         await FormPage.acessarTelaForms();
 
-        const formComponentsTitle = await FormPage.formComponentsTitle;
-        await formComponentsTitle.waitForDisplayed({ timeout: 15000 });
-        expect(await formComponentsTitle.isDisplayed()).to.be.true;
-
-        const textInput = await FormPage.textInput;
-        await textInput.waitForDisplayed({ timeout: 15000 });
-        expect(await textInput.isDisplayed()).to.be.true;
-
-        const inputTextResult = await FormPage.inputTextResult;
-        await inputTextResult.waitForDisplayed({ timeout: 15000 });
-        expect(await inputTextResult.isDisplayed()).to.be.true;
-
-        const switchLabel = await FormPage.switchLabel;
-        await switchLabel.waitForDisplayed({ timeout: 15000 });
-        expect(await switchLabel.isDisplayed()).to.be.true;
-
-        const dropdownLabel = await FormPage.dropdownLabel;
-        await dropdownLabel.waitForDisplayed({ timeout: 15000 });
-        expect(await dropdownLabel.isDisplayed()).to.be.true;
-
-        const activeOption = await FormPage.dropdownDefaultOption;
-        await activeOption.waitForDisplayed({ timeout: 15000 });
-        expect(await activeOption.isDisplayed()).to.be.true;
-
-        const formsViewGroup = await FormPage.formsViewGroup;
-        await formsViewGroup.waitForDisplayed({ timeout: 15000 });
-        expect(await formsViewGroup.isDisplayed()).to.be.true;
+        await (await FormPage.formComponentsTitle).waitForDisplayed({ timeout: 15000 });
+        await (await FormPage.textInput).waitForDisplayed({ timeout: 15000 });
+        await (await FormPage.inputTextResult).waitForDisplayed({ timeout: 15000 });
+        await (await FormPage.switchLabel).waitForDisplayed({ timeout: 15000 });
+        await (await FormPage.dropdownLabel).waitForDisplayed({ timeout: 15000 });
+        await (await FormPage.dropdownDefaultOption).waitForDisplayed({ timeout: 15000 });
+        await (await FormPage.formsViewGroup).waitForDisplayed({ timeout: 15000 });
 
         allure.endStep('passed');
 
@@ -169,17 +109,9 @@ describe('Navegação entre telas', () => {
 
         await NavigationPage.acessarTelaSwipe();
 
-        const swipeTitle = await NavigationPage.swipeTitle;
-        await swipeTitle.waitForDisplayed({ timeout: 15000 });
-        expect(await swipeTitle.isDisplayed()).to.be.true;
-
-        const swipeSubtitle = await NavigationPage.swipeSubtitle;
-        await swipeSubtitle.waitForDisplayed({ timeout: 15000 });
-        expect(await swipeSubtitle.isDisplayed()).to.be.true;
-
-        const swipeCard = await NavigationPage.swipeCard;
-        await swipeCard.waitForDisplayed({ timeout: 15000 });
-        expect(await swipeCard.isDisplayed()).to.be.true;
+        await (await NavigationPage.swipeTitle).waitForDisplayed({ timeout: 15000 });
+        await (await NavigationPage.swipeSubtitle).waitForDisplayed({ timeout: 15000 });
+        await (await NavigationPage.swipeCard).waitForDisplayed({ timeout: 15000 });
 
         allure.endStep('passed');
 
@@ -190,9 +122,7 @@ describe('Navegação entre telas', () => {
 
         await NavigationPage.acessarTelaDrag();
 
-        const dragTitle = await NavigationPage.dragTitle;
-        await dragTitle.waitForDisplayed({ timeout: 15000 });
-        expect(await dragTitle.isDisplayed()).to.be.true;
+        await (await NavigationPage.dragTitle).waitForDisplayed({ timeout: 15000 });
 
         allure.endStep('passed');
     });

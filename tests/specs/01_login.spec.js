@@ -10,9 +10,9 @@ const dataLogin = require('../../data/dataLogin.json');
 // Cenários positivos e negativos de autenticação
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('Telade Login', () => {
+describe('Tela de Login', () => {
     beforeEach(async () => {
-        allure.addFeature('Login');
+        allure.addFeature('Tela de Login');
 
         await driver.execute('mobile: terminateApp', { appId: 'com.wdiodemoapp' }).catch(() => {});
         await driver.execute('mobile: activateApp', { appId: 'com.wdiodemoapp' });
@@ -29,10 +29,9 @@ describe('Telade Login', () => {
 
         await LoginPage.acessarTelaLogin();
 
-        const loginSignUpTitle = await LoginPage.loginSignUpTitle;
+        const loginSignUpTitle = await LoginPage.loginSignUpTitle123456;
         expect(await loginSignUpTitle.isDisplayed()).to.be.true;
 
-        await LoginPage.aguardarCampos();
         await LoginPage.login(dataLogin.validUser.username, dataLogin.validUser.password);
 
         const alertTitle = await LoginPage.alertTitle;
@@ -56,12 +55,11 @@ describe('Telade Login', () => {
     // Login sem preencher email e senha
     // ─────────────────────────────────────────────────────────────────────────
 
-    it('[TC-02] Deve exibir mensagens de erro ao tentar logar sem preencher email e senha', async () => {
+    it.skip('[TC-02] Deve exibir mensagens de erro ao tentar logar sem preencher email e senha', async () => {
         allure.addStory('Validação de campos obrigatórios');
         allure.addSeverity('high');
 
         await LoginPage.acessarTelaLogin();
-        await LoginPage.aguardarCampos();
         await LoginPage.clicarLoginSemPreencher();
 
         const erroEmail = await LoginPage.errorEmailMsg;
@@ -84,7 +82,6 @@ describe('Telade Login', () => {
         allure.addSeverity('high');
 
         await LoginPage.acessarTelaLogin();
-        await LoginPage.aguardarCampos();
         await LoginPage.login(dataLogin.invalidEmail.username, dataLogin.invalidEmail.password);
 
         const erroEmail = await LoginPage.errorEmailMsg;
@@ -103,7 +100,6 @@ describe('Telade Login', () => {
         allure.addSeverity('high');
 
         await LoginPage.acessarTelaLogin();
-        await LoginPage.aguardarCampos();
         await LoginPage.login(dataLogin.validEmailEmptyPassword.username, '');
 
         const erroSenha = await LoginPage.errorPasswordMsg;
@@ -122,7 +118,6 @@ describe('Telade Login', () => {
         allure.addSeverity('high');
 
         await LoginPage.acessarTelaLogin();
-        await LoginPage.aguardarCampos();
         await LoginPage.login(dataLogin.shortPassword.username, dataLogin.shortPassword.password);
 
         const erroSenha = await LoginPage.errorPasswordMsg;

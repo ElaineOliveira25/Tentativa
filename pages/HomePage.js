@@ -35,8 +35,9 @@ class HomePage extends BasePage {
 
     /** Navega para a tela Home pelo menu inferior. */
     async acessarTelaHome() {
-        await (await this.homeButton).waitForDisplayed({ timeout: 15000 });
-        await (await this.homeButton).click();
+        const btn = await this.homeButton;
+        await btn.waitForDisplayed({ timeout: 15000 });
+        await btn.click();
     }
 }
 

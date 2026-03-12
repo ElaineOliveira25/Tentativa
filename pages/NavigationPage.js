@@ -59,34 +59,39 @@ class NavigationPage extends BasePage {
 
     // ─── Actions ──────────────────────────────────────────────────────────────
 
-    /** Navega para a tela Webview e abre/fecha a barra de navegação. */
+    /** Navega para a tela Webview. */
     async acessarTelaWebview() {
-        await (await this.webviewButton).waitForDisplayed({ timeout: 15000 });
-        await (await this.webviewButton).click();
+        const btn = await this.webviewButton;
+        await btn.waitForDisplayed({ timeout: 15000 });
+        await btn.click();
     }
 
     /** Abre a barra de navegação interna do Webview. */
     async abrirBarraNavegacao() {
-        await (await this.toggleNavigationBar).waitForDisplayed({ timeout: 15000 });
-        await (await this.toggleNavigationBar).click();
+        const btn = await this.toggleNavigationBar;
+        await btn.waitForDisplayed({ timeout: 15000 });
+        await btn.click();
     }
 
     /** Fecha a barra de navegação interna do Webview. */
     async fecharBarraNavegacao() {
-        await (await this.closeNavigationBar).waitForDisplayed({ timeout: 15000 });
-        await (await this.closeNavigationBar).click();
+        const btn = await this.closeNavigationBar;
+        await btn.waitForDisplayed({ timeout: 15000 });
+        await btn.click();
     }
 
     /** Navega para a tela Swipe. */
     async acessarTelaSwipe() {
-        await (await this.swipeButton).waitForDisplayed({ timeout: 15000 });
-        await (await this.swipeButton).click();
+        const btn = await this.swipeButton;
+        await btn.waitForDisplayed({ timeout: 15000 });
+        await btn.click();
     }
 
     /** Navega para a tela Drag. */
     async acessarTelaDrag() {
-        await (await this.dragButton).waitForDisplayed({ timeout: 15000 });
-        await (await this.dragButton).click();
+        const btn = await this.dragButton;
+        await btn.waitForDisplayed({ timeout: 15000 });
+        await btn.click();
     }
 }
 

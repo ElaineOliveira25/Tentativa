@@ -51,13 +51,47 @@ exports.config = {
      * que classifica falhas automaticamente no relatório.
      */
     onPrepare() {
-        // Limpar resultados anteriores para garantir relatório da execução atual
-        const resultsDir = path.resolve(process.cwd(), 'allure-results');
+        const resultsDir    = path.resolve(process.cwd(), 'allure-results');
+        const historySource = path.resolve(process.cwd(), 'allure-report', 'history');
+
+        // ── Limpar resultados anteriores ─────────────────────────────────────────
         if (fs.existsSync(resultsDir)) {
             fs.rmSync(resultsDir, { recursive: true, force: true });
         }
+        fs.mkdirSync(resultsDir, { recursive: true });
 
-        // Garantir que a pasta de screenshots de falha exista
+        // ── Copiar histórico anterior → alimenta Trend e Retries no relatório ────
+        if (fs.existsSync(historySource)) {
+            fs.cpSync(historySource, path.join(resultsDir, 'history'), { recursive: true });
+        }
+
+        // ── categories.json — classifica tipos de falha ──────────────────────────
+        const categories = [
+            {
+                name: 'Falha de Validação (AssertionError)',
+                messageRegex: '.*AssertionError.*',
+                matchedStatuses: ['failed'],
+            },
+            {
+                name: 'Falha de Automação (Driver/Timeout)',
+                messageRegex: '.*(WebDriverError|TimeoutError|NoSuchElementError|StaleElementReferenceError).*',
+                matchedStatuses: ['failed', 'broken'],
+            },
+            {
+                name: 'Testes Pendentes (Skipped)',
+                matchedStatuses: ['skipped'],
+            },
+            {
+                name: 'Erro de Execução (Broken)',
+                matchedStatuses: ['broken'],
+            },
+        ];
+        fs.writeFileSync(
+            path.join(resultsDir, 'categories.json'),
+            JSON.stringify(categories, null, 2),
+        );
+
+        // ── Garantir pasta de screenshots de falha ────────────────────────────────
         const errorShotsPath = path.resolve(process.cwd(), 'errorShots');
         if (!fs.existsSync(errorShotsPath)) {
             fs.mkdirSync(errorShotsPath, { recursive: true });
@@ -79,6 +113,9 @@ exports.config = {
         const appPath    = capabilities['appium:app']       || '';
         const appName    = path.basename(appPath) || 'Unknown';
 
+        const resultsDir = path.resolve(process.cwd(), 'allure-results');
+
+        // ── environment.properties — aba "Environment" do relatório ──────────────
         const envContent = [
             `Platform=${platform}`,
             `Device=${device}`,
@@ -88,9 +125,19 @@ exports.config = {
             `Node.js=${process.version}`,
             `WebdriverIO=8.x`,
         ].join('\n');
+        fs.writeFileSync(path.join(resultsDir, 'environment.properties'), envContent);
 
-        const envFile = path.resolve(process.cwd(), 'allure-results', 'environment.properties');
-        fs.writeFileSync(envFile, envContent);
+        // ── executor.json — aba "Executors" do relatório ─────────────────────────
+        const executor = {
+            name: process.env.EXECUTOR_NAME || 'Local Machine',
+            type: 'local',
+            buildName: `Run ${new Date().toISOString().replace('T', ' ').substring(0, 19)}`,
+            buildOrder: Date.now(),
+        };
+        fs.writeFileSync(
+            path.join(resultsDir, 'executor.json'),
+            JSON.stringify(executor, null, 2),
+        );
     },
 
     /**
@@ -131,33 +178,6 @@ exports.config = {
         const resultsDir = path.resolve(process.cwd(), 'allure-results');
 
         if (fs.existsSync(resultsDir)) {
-            // categories.json — classifica tipos de falha no relatório Allure
-            const categories = [
-                {
-                    name: 'Falhas de produto',
-                    messageRegex: '.*AssertionError.*',
-                    matchedStatuses: ['failed'],
-                },
-                {
-                    name: 'Falhas de infraestrutura',
-                    messageRegex: '.*(WebDriverError|TimeoutError|NoSuchElementError|StaleElementReferenceError).*',
-                    matchedStatuses: ['failed', 'broken'],
-                },
-                {
-                    name: 'Testes ignorados',
-                    matchedStatuses: ['skipped'],
-                },
-                {
-                    name: 'Testes quebrados',
-                    matchedStatuses: ['broken'],
-                },
-            ];
-
-            fs.writeFileSync(
-                path.join(resultsDir, 'categories.json'),
-                JSON.stringify(categories, null, 2),
-            );
-
             // Copia o log do Appium para ficar disponível no relatório
             const appiumLog = path.resolve(process.cwd(), 'appium.log');
             if (fs.existsSync(appiumLog)) {
